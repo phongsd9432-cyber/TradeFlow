@@ -34,11 +34,11 @@
 
 {% if c.rows %}
 <div class="table-wrap">
-  <table>
+  <table class="dense">
     <thead><tr>
-      <th class="num">Hạng</th><th>Nhà cung cấp</th><th class="num">Đơn giá gốc</th>
+      <th class="num">Hạng</th><th class="who">Nhà cung cấp</th><th class="num">Đơn giá gốc</th>
       <th class="num">Quy đổi ({{ c.target }})</th><th class="num">Tổng giá trị</th><th class="num">MOQ</th>
-      <th>Điều kiện</th><th class="num">Giao hàng</th><th>Hiệu lực</th><th>Lưu ý</th>
+      <th class="cond">Điều kiện</th><th class="num">Giao hàng</th><th>Hiệu lực</th>
     </tr></thead>
     <tbody>
     {% for r in c.rows %}
@@ -50,6 +50,10 @@
           <span class="small muted">{{ q.supplier_country|country }}</span>
           {% if q.supplier_rating %}<span class="small"><span class="stars" role="img" aria-label="{{ q.supplier_rating }} trên 5">{{ q.supplier_rating|stars }}</span>{% if 'rating' in r.best %} <span class="tag">Đánh giá cao nhất</span>{% endif %}</span>{% endif %}
           {% if c.products|length > 1 %}<span class="small muted">{{ q.product_name }}</span>{% endif %}
+          <ul class="flags">
+            {% for f in r.flags %}<li>{{ f.text }}</li>{% endfor %}
+            {% if r.missing %}<li class="muted">Chưa ghi: {{ r.missing|join(', ') }}.</li>{% endif %}
+          </ul>
         </td>
         <td class="num">{{ q.unit_price|money }} {{ q.currency }}<span class="small muted">mỗi {{ q.unit }}</span></td>
         <td class="num{% if 'price' in r.best %} best{% endif %}">
@@ -63,12 +67,6 @@
         <td>
           <span class="badge badge-{{ {'valid': 'ok', 'expiring': 'warn', 'expired': 'danger', 'none': 'muted'}[r.validity.code] }}">{{ r.validity.label }}</span>
           {% if q.valid_until %}<span class="small muted">đến {{ q.valid_until|dmy }}</span>{% endif %}
-        </td>
-        <td>
-          {% if r.flags or r.missing %}<ul class="flags">
-            {% for f in r.flags %}<li>{{ f.text }}</li>{% endfor %}
-            {% if r.missing %}<li class="muted">Chưa ghi: {{ r.missing|join(', ') }}.</li>{% endif %}
-          </ul>{% else %}<span class="muted">Đủ thông tin</span>{% endif %}
         </td>
       </tr>
     {% endfor %}
