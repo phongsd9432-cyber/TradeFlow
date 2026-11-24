@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}So sánh báo giá{% endblock %}
+{% block content %}
+<header class="page-head"><h1>So sánh báo giá</h1></header>
+<p class="lede">Chọn một sản phẩm để đặt các báo giá của nó cạnh nhau. Bạn cũng có thể vào mục Báo giá, tick các dòng muốn so sánh, kể cả khi tên sản phẩm khác nhau.</p>
+{% if products %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Sản phẩm</th><th class="num">Số báo giá</th><th class="num">Số nhà cung cấp</th><th>Đồng tiền</th><th></th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr>
+        <td><strong>{{ p.name }}</strong></td>
+        <td class="num">{{ p.quote_count }}</td>
+        <td class="num">{{ p.supplier_count }}</td>
+        <td>{{ p.currencies|join(', ') }}</td>
+        <td class="num">{% if p.quote_count > 1 %}<a class="btn btn-primary" href="{{ url_for('comparison.index', product=p.name) }}">So sánh</a>{% else %}<span class="muted small">Cần thêm báo giá</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel empty">
+  <p>Chưa có báo giá nào để so sánh. Hãy nhập báo giá của ít nhất hai nhà cung cấp cho cùng một sản phẩm.</p>
+  <a class="btn btn-primary" href="{{ url_for('quotations.new') }}">Thêm báo giá</a>
+</div>
+{% endif %}
+{% endblock %}

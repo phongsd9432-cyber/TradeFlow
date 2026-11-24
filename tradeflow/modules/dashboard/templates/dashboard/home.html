@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Tổng quan{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Tổng quan</h1></header>
+<div class="stats">
+  <a class="stat" href="{{ url_for('suppliers.index') }}"><b>{{ suppliers.active }}</b><span>Nhà cung cấp đang hoạt động</span></a>
+  <a class="stat" href="{{ url_for('quotations.index') }}"><b>{{ quotes.total }}</b><span>Báo giá đang lưu</span></a>
+  <a class="stat" href="{{ url_for('quotations.index', status='expired') }}"><b>{{ quotes.expired }}</b><span>Báo giá đã hết hạn</span></a>
+  <div class="stat"><b>{{ quotes.expiring }}</b><span>Báo giá sắp hết hạn trong 7 ngày</span></div>
+</div>
+<section class="panel">
+  <h2>Cách dùng nhanh</h2>
+  <ol class="steps">
+    <li><a href="{{ url_for('suppliers.new') }}">Thêm nhà cung cấp</a> mà bạn đang hỏi giá.</li>
+    <li><a href="{{ url_for('quotations.new') }}">Nhập báo giá</a> nhận được từ họ, càng đủ điều kiện (MOQ, Incoterms, thanh toán) càng tốt.</li>
+    <li>Vào <a href="{{ url_for('comparison.index') }}">So sánh</a> để đặt các báo giá của cùng một sản phẩm cạnh nhau.</li>
+  </ol>
+</section>
+{% endblock %}

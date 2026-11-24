@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, select %}
+{% block title %}So sánh: {{ heading }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="crumb"><a href="{{ url_for('comparison.index') }}">So sánh</a></p>
+    <h1>{{ heading }}</h1>
+  </div>
+</header>
+
+<form class="panel" method="get" action="{{ url_for('comparison.index') }}">
+  {% for i in ids %}<input type="hidden" name="ids" value="{{ i }}">{% endfor %}
+  {% if product %}<input type="hidden" name="product" value="{{ product }}">{% endif %}
+  <h2>Điều kiện so sánh</h2>
+  <div class="form-grid cols-3">
+    {{ field('quantity', 'Số lượng dự kiến mua' ~ ((' (' ~ c.units[0] ~ ')') if c.units|length == 1 else ''), values, errors, type='number', step='any', min=0) }}
+    {{ select('target', 'So sánh bằng đồng tiền', values, errors, CURRENCY_OPTIONS) }}
+    {% for cur in c.foreign_currencies %}
+      {{ field('rate_' ~ cur, '1 ' ~ cur ~ ' bằng bao nhiêu ' ~ c.target ~ '?', values, errors, type='number', step='any', min=0, help='Tỷ giá bạn tự nhập. Dùng dấu chấm cho số thập phân.') }}
+    {% endfor %}
+  </div>
+  <div class="bar">
+    <label class="check"><input type="checkbox" name="hide_expired" value="1"{% if hide_expired %} checked{% endif %}> Ẩn báo giá đã hết hạn</label>
+    <button class="btn btn-primary" type="submit">Cập nhật so sánh</button>
+  </div>
+</form>
+
+{% if c.warnings %}
+<ul class="notes">
+  {% for w in c.warnings %}<li class="note-{{ w.level }}">{{ w.text }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if c.rows %}
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th class="num">Hạng</th><th>Nhà cung cấp</th><th class="num">Đơn giá gốc</th>
+      <th class="num">Quy đổi ({{ c.target }})</th><th class="num">Tổng giá trị</th><th class="num">MOQ</th>
+      <th>Điều kiện</th><th class="num">Giao hàng</th><th>Hiệu lực</th><th>Lưu ý</th>
+    </tr></thead>
+    <tbody>
+    {% for r in c.rows %}
+      {% set q = r.quote %}
+      <tr>
+        <td class="num">{{ r.rank or '—' }}</td>
+        <td{% if 'rating' in r.best %} class="best"{% endif %}>
+          <a href="{{ url_for('quotations.detail', quotation_id=q.id) }}"><strong>{{ q.supplier_name }}</strong></a>
+          <span class="small muted">{{ q.supplier_country|country }}</span>
+          {% if q.supplier_rating %}<span class="small"><span class="stars" role="img" aria-label="{{ q.supplier_rating }} trên 5">{{ q.supplier_rating|stars }}</span>{% if 'rating' in r.best %} <span class="tag">Đánh giá cao nhất</span>{% endif %}</span>{% endif %}
+          {% if c.products|length > 1 %}<span class="small muted">{{ q.product_name }}</span>{% endif %}
+        </td>
+        <td class="num">{{ q.unit_price|money }} {{ q.currency }}<span class="small muted">mỗi {{ q.unit }}</span></td>
+        <td class="num{% if 'price' in r.best %} best{% endif %}">
+          {% if r.converted_price is not none %}{{ r.converted_price|money(4) }}{% if 'price' in r.best %}<span class="tag">Thấp nhất</span>{% elif r.premium_pct and r.premium_pct > 0 %}<span class="small muted">cao hơn {{ r.premium_pct|num(1) }}%</span>{% endif %}
+          {% else %}<span class="muted">Thiếu tỷ giá</span>{% endif %}
+        </td>
+        <td class="num">{% if r.total is not none %}{{ r.total|money(2) }} {{ c.target }}{% else %}—{% endif %}</td>
+        <td class="num{% if 'moq' in r.best %} best{% endif %}">{% if q.moq %}{{ q.moq|num(3) }}{% if r.moq_short %}<span class="tag">Cao hơn SL dự kiến</span>{% elif 'moq' in r.best %}<span class="tag">Thấp nhất</span>{% endif %}{% else %}—{% endif %}</td>
+        <td>{{ q.incoterm or '—' }}{% if q.incoterm_place %} <span class="muted">{{ q.incoterm_place }}</span>{% endif %}<span class="small muted">{{ q.payment_terms or 'Chưa ghi điều kiện thanh toán' }}</span></td>
+        <td class="num{% if 'lead_time' in r.best %} best{% endif %}">{% if q.lead_time_days is not none %}{{ q.lead_time_days }} ngày{% if 'lead_time' in r.best %}<span class="tag">Nhanh nhất</span>{% endif %}{% else %}—{% endif %}</td>
+        <td>
+          <span class="badge badge-{{ {'valid': 'ok', 'expiring': 'warn', 'expired': 'danger', 'none': 'muted'}[r.validity.code] }}">{{ r.validity.label }}</span>
+          {% if q.valid_until %}<span class="small muted">đến {{ q.valid_until|dmy }}</span>{% endif %}
+        </td>
+        <td>
+          {% if r.flags or r.missing %}<ul class="flags">
+            {% for f in r.flags %}<li>{{ f.text }}</li>{% endfor %}
+            {% if r.missing %}<li class="muted">Chưa ghi: {{ r.missing|join(', ') }}.</li>{% endif %}
+          </ul>{% else %}<span class="muted">Đủ thông tin</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="muted small">Ô nền vàng là tốt nhất theo từng tiêu chí riêng. Giá thấp nhất chưa chắc là lựa chọn tốt nhất: hãy xem thêm MOQ, điều kiện giao hàng, thời gian giao và độ tin cậy của nhà cung cấp. Chưa có điểm tổng hợp ở phiên bản này.</p>
+{% else %}
+<div class="panel empty"><p>Không còn báo giá nào để hiển thị với bộ lọc hiện tại.</p></div>
+{% endif %}
+{% endblock %}
