@@ -1,0 +1,38 @@
+{# Các ô nhập dùng chung. values: dữ liệu đang hiển thị; errors: lỗi theo tên trường. #}
+{% macro field(name, label, values, errors, type="text", required=false, help="", placeholder="", step=none, datalist=none, maxlength=none, extra_class="", min=none) -%}
+<div class="field {{ extra_class }}{% if errors.get(name) %} has-error{% endif %}">
+  <label for="f-{{ name }}">{{ label }}{% if required %} <span class="req" title="Bắt buộc">*</span>{% endif %}</label>
+  <input id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}"
+    {%- if required %} required{% endif %}
+    {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+    {%- if step is not none %} step="{{ step }}"{% endif %}
+    {%- if min is not none %} min="{{ min }}"{% endif %}
+    {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
+    {%- if datalist %} list="{{ datalist }}"{% endif %}
+    {%- if type == 'number' %} inputmode="decimal"{% endif %}
+    {%- if errors.get(name) %} aria-invalid="true" aria-describedby="e-{{ name }}"{% endif %}>
+  {% if help %}<p class="help">{{ help }}</p>{% endif %}
+  {% if errors.get(name) %}<p class="error" id="e-{{ name }}">{{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro select(name, label, values, errors, options, required=false, blank="Chọn...", help="", extra_class="") -%}
+<div class="field {{ extra_class }}{% if errors.get(name) %} has-error{% endif %}">
+  <label for="f-{{ name }}">{{ label }}{% if required %} <span class="req" title="Bắt buộc">*</span>{% endif %}</label>
+  <select id="f-{{ name }}" name="{{ name }}"{% if required %} required{% endif %}{% if errors.get(name) %} aria-invalid="true" aria-describedby="e-{{ name }}"{% endif %}>
+    <option value="">{{ blank }}</option>
+    {% for value, text in options %}<option value="{{ value }}"{% if values.get(name) == value|string %} selected{% endif %}>{{ text }}</option>{% endfor %}
+  </select>
+  {% if help %}<p class="help">{{ help }}</p>{% endif %}
+  {% if errors.get(name) %}<p class="error" id="e-{{ name }}">{{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro textarea(name, label, values, errors, help="", extra_class="wide") -%}
+<div class="field {{ extra_class }}{% if errors.get(name) %} has-error{% endif %}">
+  <label for="f-{{ name }}">{{ label }}</label>
+  <textarea id="f-{{ name }}" name="{{ name }}"{% if errors.get(name) %} aria-invalid="true" aria-describedby="e-{{ name }}"{% endif %}>{{ values.get(name, '') }}</textarea>
+  {% if help %}<p class="help">{{ help }}</p>{% endif %}
+  {% if errors.get(name) %}<p class="error" id="e-{{ name }}">{{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}

@@ -1,0 +1,2 @@
+# Thư viện cần để CHẠY TradeFlow (chỉ một thư viện)
+Flask>=3.0

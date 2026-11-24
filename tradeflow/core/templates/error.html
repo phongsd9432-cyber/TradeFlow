@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Không thể hiển thị{% endblock %}
+{% block content %}
+<div class="panel empty">
+  <h1>{{ message }}</h1>
+  <p class="muted">Mã lỗi {{ status }}.</p>
+  <a class="btn btn-primary" href="/">Về trang tổng quan</a>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field, select, textarea %}
+{% block title %}{{ 'Thêm nhà cung cấp' if mode == 'new' else 'Sửa nhà cung cấp' }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="crumb"><a href="{{ url_for('suppliers.index') }}">Nhà cung cấp</a></p>
+    <h1>{{ 'Thêm nhà cung cấp' if mode == 'new' else 'Sửa nhà cung cấp' }}</h1>
+  </div>
+</header>
+{% if errors %}<div class="flash flash-error" role="alert">Chưa lưu được. Vui lòng kiểm tra các ô được đánh dấu bên dưới.</div>{% endif %}
+<form method="post" action="{{ url_for('suppliers.create') if mode == 'new' else url_for('suppliers.update', supplier_id=supplier.id) }}">
+  <section class="panel form-section">
+    <h2>Thông tin chung</h2>
+    <div class="form-grid">
+      {{ field('name', 'Tên nhà cung cấp', values, errors, required=true, maxlength=200, extra_class='wide') }}
+      {{ select('country', 'Quốc gia', values, errors, COUNTRY_OPTIONS, required=true, blank='Chọn quốc gia...') }}
+      {{ field('website', 'Website', values, errors, placeholder='https://congty.com') }}
+      {{ textarea('address', 'Địa chỉ', values, errors) }}
+    </div>
+  </section>
+  <section class="panel form-section">
+    <h2>Liên hệ</h2>
+    <div class="form-grid cols-3">
+      {{ field('contact_name', 'Người liên hệ', values, errors, maxlength=120) }}
+      {{ field('email', 'Email', values, errors, type='email') }}
+      {{ field('phone', 'Điện thoại', values, errors, maxlength=50) }}
+    </div>
+  </section>
+  <section class="panel form-section">
+    <h2>Năng lực và đánh giá nội bộ</h2>
+    <div class="form-grid">
+      {{ textarea('products', 'Sản phẩm cung cấp', values, errors, help='Mô tả ngắn các mặt hàng họ có thể cung cấp.') }}
+      {{ select('rating', 'Đánh giá nội bộ', values, errors, [(1,'1 - Kém'),(2,'2 - Tạm'),(3,'3 - Khá'),(4,'4 - Tốt'),(5,'5 - Rất tốt')], blank='Chưa đánh giá', help='Do bạn tự chấm, dùng để tham khảo khi so sánh.') }}
+      {{ textarea('notes', 'Ghi chú', values, errors) }}
+    </div>
+  </section>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Lưu nhà cung cấp</button>
+    <a class="btn" href="{{ url_for('suppliers.index') if mode == 'new' else url_for('suppliers.detail', supplier_id=supplier.id) }}">Hủy</a>
+  </div>
+</form>
+{% endblock %}

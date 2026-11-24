@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Nhà cung cấp{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Nhà cung cấp</h1>
+  <a class="btn btn-primary" href="{{ url_for('suppliers.new') }}">Thêm nhà cung cấp</a>
+</header>
+
+<form class="toolbar" method="get" action="{{ url_for('suppliers.index') }}">
+  <label class="sr" for="q">Tìm kiếm</label>
+  <input id="q" type="search" name="q" value="{{ q }}" placeholder="Tìm theo tên, sản phẩm, người liên hệ (gõ không dấu cũng được)">
+  <label class="sr" for="country">Quốc gia</label>
+  <select id="country" name="country">
+    <option value="">Mọi quốc gia</option>
+    {% for code, name in COUNTRY_OPTIONS %}<option value="{{ code }}"{% if code == country %} selected{% endif %}>{{ name }}</option>{% endfor %}
+  </select>
+  <label class="check"><input type="checkbox" name="archived" value="1"{% if include_archived %} checked{% endif %}> Hiện cả mục đã lưu trữ</label>
+  <button class="btn" type="submit">Lọc</button>
+</form>
+
+{% if suppliers %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nhà cung cấp</th><th>Quốc gia</th><th>Liên hệ</th><th>Sản phẩm cung cấp</th><th>Đánh giá</th><th></th></tr></thead>
+    <tbody>
+    {% for s in suppliers %}
+      <tr>
+        <td><a href="{{ url_for('suppliers.detail', supplier_id=s.id) }}"><strong>{{ s.name }}</strong></a></td>
+        <td>{{ s.country|country }}</td>
+        <td>{{ s.contact_name or '—' }}{% if s.email %}<span class="small muted">{{ s.email }}</span>{% endif %}</td>
+        <td><div class="clip">{{ s.products or '—' }}</div></td>
+        <td><span class="stars"{% if s.rating %} role="img" aria-label="{{ s.rating }} trên 5"{% endif %}>{{ s.rating|stars }}</span></td>
+        <td>{% if not s.is_active %}<span class="badge badge-muted">Đã lưu trữ</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% elif filtered %}
+<div class="panel empty"><p>Không có nhà cung cấp nào khớp với bộ lọc hiện tại.</p><a class="btn" href="{{ url_for('suppliers.index') }}">Xóa bộ lọc</a></div>
+{% else %}
+<div class="panel empty">
+  <p>Chưa có nhà cung cấp nào. Hãy thêm nhà cung cấp đầu tiên để bắt đầu lưu báo giá và so sánh.</p>
+  <a class="btn btn-primary" href="{{ url_for('suppliers.new') }}">Thêm nhà cung cấp</a>
+</div>
+{% endif %}
+{% endblock %}

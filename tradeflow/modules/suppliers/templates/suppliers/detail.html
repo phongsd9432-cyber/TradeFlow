@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ supplier.name }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="crumb"><a href="{{ url_for('suppliers.index') }}">Nhà cung cấp</a></p>
+    <h1>{{ supplier.name }} {% if not supplier.is_active %}<span class="badge badge-muted">Đã lưu trữ</span>{% endif %}</h1>
+  </div>
+  <div class="actions">
+    {% if supplier.is_active %}<a class="btn btn-primary" href="/quotations/new?supplier_id={{ supplier.id }}">Thêm báo giá</a>{% endif %}
+    <a class="btn" href="/quotations/?supplier_id={{ supplier.id }}">Xem báo giá</a>
+    <a class="btn" href="{{ url_for('suppliers.edit', supplier_id=supplier.id) }}">Sửa</a>
+  </div>
+</header>
+
+<section class="panel">
+  <dl class="meta">
+    <dt>Quốc gia</dt><dd>{{ supplier.country|country }}</dd>
+    <dt>Địa chỉ</dt><dd>{{ supplier.address or '—' }}</dd>
+    <dt>Người liên hệ</dt><dd>{{ supplier.contact_name or '—' }}</dd>
+    <dt>Email</dt><dd>{% if supplier.email %}<a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a>{% else %}—{% endif %}</dd>
+    <dt>Điện thoại</dt><dd>{{ supplier.phone or '—' }}</dd>
+    <dt>Website</dt><dd>{% if supplier.website %}<a href="{{ supplier.website }}" target="_blank" rel="noopener noreferrer">{{ supplier.website }}</a>{% else %}—{% endif %}</dd>
+    <dt>Sản phẩm cung cấp</dt><dd>{{ supplier.products or '—' }}</dd>
+    <dt>Đánh giá nội bộ</dt><dd><span class="stars">{{ supplier.rating|stars }}</span></dd>
+    <dt>Ghi chú</dt><dd>{{ supplier.notes or '—' }}</dd>
+    <dt>Tạo lúc</dt><dd>{{ supplier.created_at|dmy_hm }}</dd>
+    <dt>Cập nhật lần cuối</dt><dd>{{ supplier.updated_at|dmy_hm }}</dd>
+  </dl>
+</section>
+
+<section class="panel">
+  <h2>Lưu trữ hoặc xóa</h2>
+  <p class="muted">Lưu trữ sẽ ẩn nhà cung cấp khỏi danh sách và không cho thêm báo giá mới, nhưng giữ nguyên lịch sử. Chỉ xóa được nhà cung cấp chưa có báo giá nào.</p>
+  <div class="actions">
+    {% if supplier.is_active %}
+    <form class="inline" method="post" action="{{ url_for('suppliers.archive', supplier_id=supplier.id) }}"><button class="btn" type="submit" data-confirm="Lưu trữ nhà cung cấp này?">Lưu trữ</button></form>
+    {% else %}
+    <form class="inline" method="post" action="{{ url_for('suppliers.restore', supplier_id=supplier.id) }}"><button class="btn" type="submit">Khôi phục</button></form>
+    {% endif %}
+    <form class="inline" method="post" action="{{ url_for('suppliers.delete', supplier_id=supplier.id) }}"><button class="btn btn-danger" type="submit" data-confirm="Xóa vĩnh viễn nhà cung cấp này? Không thể hoàn tác.">Xóa</button></form>
+  </div>
+</section>
+{% endblock %}
