@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ quote.product_name }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="crumb"><a href="{{ url_for('quotations.index') }}">Báo giá</a></p>
+    <h1>{{ quote.product_name }}</h1>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('comparison.index', product=quote.product_name) }}">So sánh cùng sản phẩm</a>
+    <a class="btn" href="{{ url_for('quotations.edit', quotation_id=quote.id) }}">Sửa</a>
+  </div>
+</header>
+
+<section class="panel">
+  <dl class="meta">
+    <dt>Nhà cung cấp</dt><dd><a href="{{ url_for('suppliers.detail', supplier_id=quote.supplier_id) }}">{{ quote.supplier_name }}</a>, {{ quote.supplier_country|country }}{% if not quote.supplier_active %} <span class="badge badge-muted">Đã lưu trữ</span>{% endif %}</dd>
+    <dt>Số báo giá</dt><dd>{{ quote.reference_no or '—' }}</dd>
+    <dt>Đơn giá</dt><dd><strong>{{ quote.unit_price|money }} {{ quote.currency }}</strong> mỗi {{ quote.unit }}</dd>
+    <dt>MOQ</dt><dd>{% if quote.moq %}{{ quote.moq|num(3) }} {{ quote.unit }}{% else %}—{% endif %}</dd>
+    <dt>Incoterms</dt><dd>{% if quote.incoterm %}{{ quote.incoterm }}{% if quote.incoterm_place %}, {{ quote.incoterm_place }}{% endif %}{% else %}—{% endif %}</dd>
+    <dt>Thanh toán</dt><dd>{{ quote.payment_terms or '—' }}</dd>
+    <dt>Thời gian giao hàng</dt><dd>{% if quote.lead_time_days is not none %}{{ quote.lead_time_days }} ngày{% else %}—{% endif %}</dd>
+    <dt>Ngày báo giá</dt><dd>{{ quote.quote_date|dmy }}</dd>
+    <dt>Hiệu lực</dt><dd><span class="badge badge-{{ {'valid': 'ok', 'expiring': 'warn', 'expired': 'danger', 'none': 'muted'}[validity.code] }}">{{ validity.label }}</span>{% if quote.valid_until %} đến {{ quote.valid_until|dmy }}{% endif %}</dd>
+    <dt>Thông số, chất lượng</dt><dd>{{ quote.specifications or '—' }}</dd>
+    <dt>Ghi chú</dt><dd>{{ quote.notes or '—' }}</dd>
+    <dt>Tạo lúc</dt><dd>{{ quote.created_at|dmy_hm }}</dd>
+    <dt>Cập nhật lần cuối</dt><dd>{{ quote.updated_at|dmy_hm }}</dd>
+  </dl>
+</section>
+
+<section class="panel">
+  <h2>Xóa báo giá</h2>
+  <p class="muted">Xóa là vĩnh viễn. Nếu báo giá chỉ hết hạn thì nên giữ lại để theo dõi lịch sử giá.</p>
+  <form class="inline" method="post" action="{{ url_for('quotations.delete', quotation_id=quote.id) }}"><button class="btn btn-danger" type="submit" data-confirm="Xóa vĩnh viễn báo giá này? Không thể hoàn tác.">Xóa báo giá</button></form>
+</section>
+{% endblock %}

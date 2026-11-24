@@ -9,6 +9,6 @@ from tradeflow.core.module import ModuleInfo
 
 
 def load_modules() -> list[ModuleInfo]:
-    from tradeflow.modules import suppliers
+    from tradeflow.modules import comparison, quotations, suppliers
 
-    return [suppliers.module]
+    return [suppliers.module, quotations.module, comparison.module]

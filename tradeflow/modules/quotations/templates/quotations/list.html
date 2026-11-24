@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Báo giá{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Báo giá</h1>
+  <a class="btn btn-primary" href="{{ url_for('quotations.new', supplier_id=supplier_id) }}">Thêm báo giá</a>
+</header>
+
+<form class="toolbar" method="get" action="{{ url_for('quotations.index') }}">
+  <label class="sr" for="q">Tìm kiếm</label>
+  <input id="q" type="search" name="q" value="{{ q }}" placeholder="Tìm theo sản phẩm, nhà cung cấp, số báo giá (gõ không dấu cũng được)">
+  <label class="sr" for="supplier_id">Nhà cung cấp</label>
+  <select id="supplier_id" name="supplier_id">
+    <option value="">Mọi nhà cung cấp</option>
+    {% for s in suppliers %}<option value="{{ s.id }}"{% if s.id == supplier_id %} selected{% endif %}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <label class="sr" for="status">Hiệu lực</label>
+  <select id="status" name="status">
+    <option value="">Mọi trạng thái</option>
+    <option value="active"{% if status == 'active' %} selected{% endif %}>Chưa hết hạn</option>
+    <option value="expired"{% if status == 'expired' %} selected{% endif %}>Đã hết hạn</option>
+  </select>
+  <button class="btn" type="submit">Lọc</button>
+</form>
+
+{% if quotes %}
+<form method="get" action="{{ url_for('comparison.index') }}" data-compare>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th><span class="sr">Chọn để so sánh</span></th><th>Sản phẩm</th><th>Nhà cung cấp</th>
+        <th class="num">Đơn giá</th><th class="num">MOQ</th><th>Incoterms</th>
+        <th class="num">Giao hàng</th><th>Hiệu lực</th><th>Ngày báo giá</th>
+      </tr></thead>
+      <tbody>
+      {% for x in quotes %}
+        {% set v = validity[x.id] %}
+        <tr>
+          <td><input type="checkbox" name="ids" value="{{ x.id }}" aria-label="Chọn báo giá {{ x.product_name }} của {{ x.supplier_name }} để so sánh"></td>
+          <td><a href="{{ url_for('quotations.detail', quotation_id=x.id) }}"><strong>{{ x.product_name }}</strong></a>{% if x.reference_no %}<span class="small muted">Số {{ x.reference_no }}</span>{% endif %}</td>
+          <td><a href="{{ url_for('suppliers.detail', supplier_id=x.supplier_id) }}">{{ x.supplier_name }}</a><span class="small muted">{{ x.supplier_country|country }}</span></td>
+          <td class="num">{{ x.unit_price|money }} {{ x.currency }}<span class="small muted">mỗi {{ x.unit }}</span></td>
+          <td class="num">{% if x.moq %}{{ x.moq|num(3) }} {{ x.unit }}{% else %}—{% endif %}</td>
+          <td>{{ x.incoterm or '—' }}{% if x.incoterm_place %}<span class="small muted">{{ x.incoterm_place }}</span>{% endif %}</td>
+          <td class="num">{% if x.lead_time_days is not none %}{{ x.lead_time_days }} ngày{% else %}—{% endif %}</td>
+          <td>
+            <span class="badge badge-{{ {'valid': 'ok', 'expiring': 'warn', 'expired': 'danger', 'none': 'muted'}[v.code] }}">{{ v.label }}</span>
+            {% if x.valid_until %}<span class="small muted">đến {{ x.valid_until|dmy }}</span>{% endif %}
+          </td>
+          <td>{{ x.quote_date|dmy }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="bar">
+    <button class="btn btn-primary" type="submit" data-needs-two>So sánh các báo giá đã chọn</button>
+    <span class="muted small">Tick ít nhất 2 báo giá. Hoặc mở trang So sánh để chọn theo tên sản phẩm.</span>
+  </div>
+</form>
+{% elif filtered %}
+<div class="panel empty"><p>Không có báo giá nào khớp với bộ lọc hiện tại.</p><a class="btn" href="{{ url_for('quotations.index') }}">Xóa bộ lọc</a></div>
+{% else %}
+<div class="panel empty">
+  <p>Chưa có báo giá nào. Báo giá luôn gắn với một nhà cung cấp, nên hãy thêm nhà cung cấp trước nếu bạn chưa có.</p>
+  <a class="btn btn-primary" href="{{ url_for('quotations.new') }}">Thêm báo giá</a>
+</div>
+{% endif %}
+{% endblock %}
